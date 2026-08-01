@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FLOW</string>
+    
+    <!-- Navigation Tabs -->
+    <string name="tab_flow">Flow</string>
+    <string name="tab_mirror">Mirror</string>
+    <string name="tab_ascend">Ascend</string>
+
+    <!-- Flow Screen Setup -->
+    <string name="intent_writing">Creative Writing</string>
+    <string name="intent_reading">Deep Reading</string>
+    <string name="intent_meditating">Zen Meditation</string>
+    <string name="intent_planning">Strategic Planning</string>
+    <string name="intent_placeholder">What is your single intent? (e.g. Deep Reading)</string>
+    <string name="enter_threshold">Enter Threshold</string>
+    <string name="intent_center">Center</string>
+
+    <!-- Breathing Phases -->
+    <string name="breath_in">Breathe In</string>
+    <string name="breath_hold">Hold</string>
+    <string name="breath_out">Breathe Out</string>
+    <string name="breath_press_hold">Press &amp; Hold the Circle</string>
+    <string name="breath_centering">Centering…</string>
+    <string name="breath_count_format">Breath %1$d of 3</string>
+    <string name="breath_anchor">Anchor yourself with 3 deep breaths</string>
+
+    <!-- Self-Reflection States -->
+    <string name="flow_score_1">1: Distracted</string>
+    <string name="flow_score_2">2: Effortful Focus</string>
+    <string name="flow_score_3">3: Consistent Flow</string>
+    <string name="flow_score_4">4: Complete Absorption</string>
+    <string name="flow_score_5">5: Samadhi (No boundary)</string>
+
+    <!-- Elevate / Ascend Screen -->
+    <string name="ascend_title">ELEVATE FOCUS</string>
+    <string name="ascend_subtitle">Daily practices for deeper presence and calm</string>
+    
+    <string name="stage_trait_flow">Everyday Presence</string>
+    <string name="stage_trait_flow_desc">Bring focus into daily life: Get gentle micro-prompts to remain present and relaxed during mundane actions like walking, drinking water, or resting.</string>
+    <string name="active_state">Active State</string>
+    <string name="trigger_shift">Receive Mindful Prompt</string>
+
+    <string name="stage_group_flow">Collective Calming</string>
+    <string name="stage_group_flow_desc">Shared focus space: Realize you are not alone. Send or receive silent waves of calm energy to synchronize with others focused right now.</string>
+    <string name="group_flow_active_count">%1$s focusers are currently in Flow worldwide. Pulse in unity.</string>
+    <string name="group_flow_instruction">Tap anywhere to emit a wave of calm focus</string>
+
+    <string name="stage_transcendence">Self-Regulation</string>
+    <string name="stage_transcendence_desc">Decongest the busy mind: Practice paced breathing to trigger Heart Rate Variability (HRV) coherence and explore gentle awareness pointers.</string>
+    
+    <string name="hrv_title">HRV Physiological Coherence</string>
+    <string name="hrv_desc">Breathing slowly at a rate of 6 seconds in and 6 seconds out synchronizes your heart rate with respiration. This reduces stress, lowers cortisol, and naturally quietens the brain\'s analytical networks, guiding you into a deeply peaceful state of flow.</string>
+
+    <string name="non_dual_guide_title">Mindfulness Mirror</string>
+    <string name="non_dual_guide_subtitle">A 1-minute guided exploration to quiet the analytical mind.</string>
+    <string name="begin_awareness_guide">Begin Reflection</string>
+    <string name="end_guide">End Reflection</string>
+    <string name="pointer_progress">Step %1$d of %2$d • 10s intervals</string>
+
+    <!-- Mindful pointers -->
+    <string name="pointer_1">Take a slow, deep breath. Observe the visual space of this screen.</string>
+    <string name="pointer_2">Notice if there is any tension in your shoulders or face, and let it soften.</string>
+    <string name="pointer_3">Let go of the need to do or achieve anything for just a moment.</string>
+    <string name="pointer_4">Observe: who is the one noticing these thoughts right now?</string>
+    <string name="pointer_5">Rest in this quiet, open space of awareness where thoughts come and go.</string>
+    <string name="pointer_6">You are here, perfectly present. Stillness in action.</string>
+
+    <!-- Reminders (Trait Flow micro-prompts) -->
+    <string name="reminder_1">Feel the ground beneath your feet. Feel the support.</string>
+    <string name="reminder_2">Take one conscious breath. Notice the cool air entering your nostrils.</string>
+    <string name="reminder_3">Soften your shoulders. Release any hidden tension in your jaw.</string>
+    <string name="reminder_4">Listen closely to the nearest sound. Then listen to the farthest sound.</string>
+    <string name="reminder_5">Notice the spaces between your thoughts. Find the stillness there.</string>
+    <string name="reminder_6">Observe the weight of your hands resting in your lap.</string>
+    <string name="reminder_7">Gaze gently at an object near you. Appreciate its simple existence without naming it.</string>
+    <string name="reminder_8">Touch your chest. Feel the constant, quiet rhythm of your heart.</string>
+</resources>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Ambient Halo Center Glow -->
+    <path
+        android:fillColor="#2581B29A"
+        android:pathData="M 54,54 m -32,0 a 32,32 0 1,1 64,0 a 32,32 0 1,1 -64,0" />
+    
+    <!-- Bold Zen Ensō Circle Brushstroke (radius 30dp) -->
+    <path
+        android:strokeColor="#F4A261"
+        android:strokeWidth="6.5"
+        android:strokeLineCap="round"
+        android:pathData="M 54,54 m -30,0 a 30,30 0 1,1 60,0 a 30,30 0 1,1 -54,18" />
+
+    <!-- Lotus Center - Main Petal (Larger, prominent) -->
+    <path
+        android:fillColor="#81B29A"
+        android:pathData="M 54,37 C 44,49 44,58 54,65 C 64,58 64,49 54,37 Z" />
+    <!-- Left Flanking Petal -->
+    <path
+        android:fillColor="#A3C9A8"
+        android:pathData="M 54,48 C 41,52 40,62 54,65 C 46,61 46,53 54,48 Z" />
+    <!-- Right Flanking Petal -->
+    <path
+        android:fillColor="#A3C9A8"
+        android:pathData="M 54,48 C 67,52 68,62 54,65 C 62,61 62,53 54,48 Z" />
+    <!-- Golden Seed Core -->
+    <path
+        android:fillColor="#E76F51"
+        android:pathData="M 54,54 m -4,0 a 4,4 0 1,1 8,0 a 4,4 0 1,1 -8,0" />
+    <path
+        android:fillColor="#F4A261"
+        android:pathData="M 54,54 m -2,0 a 2,2 0 1,1 4,0 a 2,2 0 1,1 -4,0" />
+</vector>

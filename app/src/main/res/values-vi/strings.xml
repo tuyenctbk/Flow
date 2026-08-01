@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FLOW</string>
+    
+    <!-- Navigation Tabs -->
+    <string name="tab_flow">Tập trung</string>
+    <string name="tab_mirror">Soi chiếu</string>
+    <string name="tab_ascend">Thăng hoa</string>
+
+    <!-- Flow Screen Setup -->
+    <string name="intent_writing">Viết lách</string>
+    <string name="intent_coding">Lập trình</string>
+    <string name="intent_reading">Đọc sách</string>
+    <string name="intent_meditating">Thiền định</string>
+    <string name="intent_placeholder">Ý định duy nhất của bạn là gì? (Ví dụ: Viết mã Kotlin)</string>
+    <string name="enter_threshold">Khởi động</string>
+    <string name="intent_center">Vô tâm</string>
+
+    <!-- Breathing Phases -->
+    <string name="breath_in">Hít vào</string>
+    <string name="breath_hold">Nín thở</string>
+    <string name="breath_out">Thở ra</string>
+    <string name="breath_press_hold">Nhấn &amp; Giữ Vòng Tròn</string>
+    <string name="breath_centering">Đang định tâm…</string>
+    <string name="breath_count_format">Hơi thở %1$d / 3</string>
+    <string name="breath_anchor">An trú tâm trí với 3 hơi thở sâu</string>
+
+    <!-- Self-Reflection States -->
+    <string name="flow_score_1">1: Tâm trí phiêu tán</string>
+    <string name="flow_score_2">2: Cố gắng tập trung</string>
+    <string name="flow_score_3">3: Tập trung đều đặn</string>
+    <string name="flow_score_4">4: Đắm chìm sâu sắc</string>
+    <string name="flow_score_5">5: Định (Quên mình)</string>
+
+    <!-- Elevate / Ascend Screen -->
+    <string name="ascend_title">THĂNG HOA TIÊU ĐIỂM</string>
+    <string name="ascend_subtitle">Rèn luyện hiện diện sâu sắc và bình an mỗi ngày</string>
+    
+    <string name="stage_trait_flow">Hiện Diện Thường Nhật</string>
+    <string name="stage_trait_flow_desc">Mang sự tập trung vào đời sống: Nhận các gợi ý tinh tế để giữ sự tỉnh thức và thư giãn khi đi bộ, uống nước hoặc nghỉ ngơi.</string>
+    <string name="active_state">Đang hoạt động</string>
+    <string name="trigger_shift">Nhận gợi ý tỉnh thức</string>
+
+    <string name="stage_group_flow">Cộng Hưởng Đồng Điệu</string>
+    <string name="stage_group_flow_desc">Không gian tập trung chung: Nhận biết bạn không đơn độc. Gửi và nhận những làn sóng bình an tĩnh lặng để cùng cộng hưởng với mọi người.</string>
+    <string name="group_flow_active_count">Có %1$s người đang cùng tập trung trực tuyến. Hãy lan tỏa bình an.</string>
+    <string name="group_flow_instruction">Chạm để lan tỏa làn sóng tập trung bình an</string>
+
+    <string name="stage_transcendence">Điều Hòa Thân Tâm</string>
+    <string name="stage_transcendence_desc">Giải tỏa tâm trí bận rộn: Tập thở điều hòa nhịp tim (HRV) và chiêm nghiệm các gợi ý định tâm nhẹ nhàng.</string>
+    
+    <string name="hrv_title">Cộng hưởng Sinh học HRV</string>
+    <string name="hrv_desc">Hít thở đều đặn (6 giây hít vào, 6 giây thở ra) giúp đồng điệu nhịp tim với nhịp thở. Phương pháp này giảm căng thẳng, hạ hormone cortisol và làm dịu vùng não phân tích, giúp bạn bước vào trạng thái dòng chảy tĩnh lặng một cách tự nhiên.</string>
+
+    <string name="non_dual_guide_title">Kính Chiếu Tỉnh Thức</string>
+    <string name="non_dual_guide_subtitle">Gợi ý 1 phút tĩnh tâm để tạm lắng dịu những suy nghĩ phân tích.</string>
+    <string name="begin_awareness_guide">Bắt đầu chiêm nghiệm</string>
+    <string name="end_guide">Kết thúc</string>
+    <string name="pointer_progress">Bước %1$d / %2$d • Mỗi 10 giây</string>
+
+    <!-- Mindful pointers -->
+    <string name="pointer_1">Hít một hơi thật sâu và chậm. Quan sát khoảng không gian trên màn hình.</string>
+    <string name="pointer_2">Nhận biết nếu có sự căng thẳng ở vai hoặc mặt, và thả lỏng nhẹ nhàng.</string>
+    <string name="pointer_3">Tạm buông bỏ mong muốn phải làm hoặc đạt được điều gì trong chốc lát.</string>
+    <string name="pointer_4">Quan sát: Ai là người đang nhận biết những suy nghĩ này lúc này?</string>
+    <string name="pointer_5">An trú trong khoảng lặng tĩnh tại, nơi những suy nghĩ tự đến rồi tự đi.</string>
+    <string name="pointer_6">Bạn đang ở đây, hiện diện trọn vẹn. Tĩnh lặng trong hành động.</string>
+
+    <!-- Reminders (Trait Flow micro-prompts) -->
+    <string name="reminder_1">Cảm nhận mặt đất dưới chân bạn. Cảm nhận sự nâng đỡ.</string>
+    <string name="reminder_2">Hít một hơi thật chậm. Nhận biết luồng khí mát đi qua mũi.</string>
+    <string name="reminder_3">Thả lỏng hai vai. Buông bỏ sự căng cứng ẩn sau quai hàm.</string>
+    <string name="reminder_4">Lắng nghe âm thanh gần nhất. Sau đó, lắng nghe âm thanh ở xa nhất.</string>
+    <string name="reminder_5">Nhận biết khoảng lặng giữa các suy nghĩ. Tìm sự tĩnh lặng tại đó.</string>
+    <string name="reminder_6">Cảm nhận sức nặng của đôi bàn tay đang thả lỏng trên đùi.</string>
+    <string name="reminder_7">Nhìn nhẹ nhàng vào một vật gần bạn. Trân trọng sự hiện diện của nó mà không phán xét.</string>
+    <string name="reminder_8">Chạm khẽ vào ngực. Cảm nhận nhịp đập đều đặn, êm dịu của trái tim.</string>
+</resources>

@@ -1,0 +1,6 @@
+{
+  "name": "FLOW",
+  "description": "Stillness in Action. A beautiful, minimalist workspace designed to help you enter the Flow state, calibrate focus, and practice metacognitive reflection.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
