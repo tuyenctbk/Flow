@@ -62,11 +62,12 @@ class FlowViewModel(application: Application) : AndroidViewModel(application) {
         )
 
     // Theme Mode Selection State
-    private val _themeMode = MutableStateFlow(FlowThemeMode.CIRCADIAN)
+    private val _themeMode = MutableStateFlow(appPreferences.getSavedThemeMode())
     val themeMode = _themeMode.asStateFlow()
 
     fun setThemeMode(mode: FlowThemeMode) {
         _themeMode.value = mode
+        appPreferences.saveThemeMode(mode)
     }
 
     fun getEffectiveThemeMode(): FlowThemeMode {
@@ -98,6 +99,9 @@ class FlowViewModel(application: Application) : AndroidViewModel(application) {
     // Countdown state (in seconds)
     private val _remainingSeconds = MutableStateFlow(1500)
     val remainingSeconds = _remainingSeconds.asStateFlow()
+
+    private val _isTimerRunning = MutableStateFlow(false)
+    val isTimerRunning = _isTimerRunning.asStateFlow()
 
     // Calibration levels (1 to 5)
     private val _challengeLevel = MutableStateFlow(3)
@@ -282,11 +286,17 @@ class FlowViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Enter AMOLED Focus Mode
+    fun proceedToShield() {
+        enterDeepShield()
+        startFocusTimer()
+    }
+
     private fun enterDeepShield() {
         val selectedIntent = _currentIntent.value.ifBlank { "Deep Focus" }
         appPreferences.recordIntentSelection(selectedIntent)
         _focusState.value = FocusState.DEEP_SHIELD
         _remainingSeconds.value = _selectedDurationMinutes.value * 60
+        _isTimerRunning.value = true
         synthesizer.strikeSingingBowl() // Strike bowl at session start!
         com.example.service.FlowForegroundService.startService(
             getApplication(),
@@ -298,6 +308,7 @@ class FlowViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun startFocusTimer() {
         countdownJob?.cancel()
+        _isTimerRunning.value = true
         countdownJob = viewModelScope.launch {
             while (_remainingSeconds.value > 0) {
                 delay(1000)
@@ -316,6 +327,7 @@ class FlowViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
             // Session complete!
+            _isTimerRunning.value = false
             synthesizer.strikeSingingBowl() // Masterful finishing strike
             com.example.service.FlowForegroundService.stopService(getApplication())
             delay(1000)
@@ -326,6 +338,25 @@ class FlowViewModel(application: Application) : AndroidViewModel(application) {
     private fun stopFocusTimer() {
         countdownJob?.cancel()
         countdownJob = null
+        _isTimerRunning.value = false
+    }
+
+    fun toggleTimerPlayPause() {
+        if (_isTimerRunning.value) {
+            stopFocusTimer()
+        } else {
+            startFocusTimer()
+        }
+    }
+
+    fun resetTimer() {
+        stopFocusTimer()
+        _remainingSeconds.value = _selectedDurationMinutes.value * 60
+    }
+
+    fun updateFocusInterval(minutes: Int) {
+        setDuration(minutes)
+        _remainingSeconds.value = minutes * 60
     }
 
     // Post Session Reflection

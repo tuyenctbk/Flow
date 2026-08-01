@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.animation.*
+import androidx.compose.animation.core.EaseInOutSine
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -151,10 +153,20 @@ fun MainContent(viewModel: FlowViewModel) {
                     bottom = if (showBottomBar) innerPadding.calculateBottomPadding() else 0.dp
                 )
         ) {
-            when (selectedTab) {
-                0 -> FlowScreen(viewModel = viewModel)
-                1 -> MirrorScreen(viewModel = viewModel)
-                2 -> AscendScreen(viewModel = viewModel)
+            AnimatedContent(
+                targetState = selectedTab,
+                transitionSpec = {
+                    (fadeIn(animationSpec = tween(400, easing = EaseInOutSine)) +
+                     slideInVertically(animationSpec = tween(400), initialOffsetY = { 20 })) togetherWith
+                    fadeOut(animationSpec = tween(300, easing = EaseInOutSine))
+                },
+                label = "MainTabTransition"
+            ) { targetTab ->
+                when (targetTab) {
+                    0 -> FlowScreen(viewModel = viewModel)
+                    1 -> MirrorScreen(viewModel = viewModel)
+                    2 -> AscendScreen(viewModel = viewModel)
+                }
             }
         }
     }

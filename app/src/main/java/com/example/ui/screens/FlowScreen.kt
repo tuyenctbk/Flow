@@ -1,5 +1,7 @@
 package com.example.ui.screens
 
+import com.example.ui.components.BreathPacer
+import com.example.ui.components.MinimalistFocusTimer
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
@@ -32,6 +34,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import com.example.R
 import androidx.compose.ui.text.font.FontFamily
@@ -643,17 +646,15 @@ fun ThresholdRitualView(viewModel: FlowViewModel) {
     val ZenTextSecondary = MaterialTheme.colorScheme.onSurfaceVariant
     val ZenStoneDark = MaterialTheme.colorScheme.surface
     val ZenStoneGrey = MaterialTheme.colorScheme.surfaceVariant
-    val ZenStoneLight = MaterialTheme.colorScheme.outline
-    val ZenMossGreen = MaterialTheme.colorScheme.secondary
+
+    var selectedRitualTab by remember { mutableStateOf(0) } // 0: Guided Pacer, 1: Touch Anchor
 
     val isHolding by viewModel.holdingCircle.collectAsState()
     val phase by viewModel.breathPhase.collectAsState()
     val progress by viewModel.breathProgress.collectAsState()
     val count by viewModel.breathCount.collectAsState()
 
-    val scope = rememberCoroutineScope()
-
-    // Smooth pulsing values
+    // Smooth pulsing values for touch anchor
     val infiniteTransition = rememberInfiniteTransition(label = "PulsingCircle")
     val idlePulseScale by infiniteTransition.animateFloat(
         initialValue = 0.95f,
@@ -665,23 +666,21 @@ fun ThresholdRitualView(viewModel: FlowViewModel) {
         label = "IdlePulse"
     )
 
-    // Dynamic scale depending on breathing phase & holding state
     val targetScale = when {
         !isHolding -> idlePulseScale
-        phase == BreathPhase.IN -> 1.0f + (progress * 0.8f) // Expand to 1.8x
-        phase == BreathPhase.HOLD -> 1.8f // Keep expanded
-        phase == BreathPhase.OUT -> 1.8f - (progress * 0.8f) // Contract back to 1.0x
+        phase == BreathPhase.IN -> 1.0f + (progress * 0.8f)
+        phase == BreathPhase.HOLD -> 1.8f
+        phase == BreathPhase.OUT -> 1.8f - (progress * 0.8f)
         else -> 1.0f
     }
 
-    // Dynamic color glowing overlay
     val glowIntensity = if (isHolding && phase == BreathPhase.HOLD) progress else 0f
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(24.dp)
+            .padding(20.dp)
             .statusBarsPadding()
             .navigationBarsPadding(),
         verticalArrangement = Arrangement.SpaceBetween,
@@ -706,125 +705,195 @@ fun ThresholdRitualView(viewModel: FlowViewModel) {
                 style = MaterialTheme.typography.bodyMedium.copy(color = ZenTextSecondary),
                 textAlign = TextAlign.Center
             )
-        }
 
-        // Center Breathing Circle
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(
-                text = when {
-                    !isHolding -> stringResource(R.string.breath_press_hold)
-                    phase == BreathPhase.IN -> stringResource(R.string.breath_in)
-                    phase == BreathPhase.HOLD -> stringResource(R.string.breath_hold)
-                    phase == BreathPhase.OUT -> stringResource(R.string.breath_out)
-                    else -> stringResource(R.string.breath_centering)
-                },
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontFamily = FontFamily.Serif,
-                    fontWeight = FontWeight.Light,
-                    color = if (isHolding) ZenAmber else ZenTextPrimary
-                ),
-                textAlign = TextAlign.Center
-            )
+            Spacer(modifier = Modifier.height(14.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = if (isHolding) stringResource(R.string.breath_count_format, count) else stringResource(R.string.breath_anchor),
-                style = MaterialTheme.typography.bodyMedium.copy(color = ZenTextSecondary)
-            )
-
-            Spacer(modifier = Modifier.height(48.dp))
-
-            // The Physical Touch Circle
-            Box(
+            // Ritual Mode Switcher
+            Row(
                 modifier = Modifier
-                    .size(240.dp)
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onPress = {
-                                viewModel.startHoldingBreath()
-                                tryAwaitRelease()
-                                viewModel.releaseHoldingBreath()
-                            }
-                        )
-                    },
-                contentAlignment = Alignment.Center
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(ZenStoneDark)
+                    .border(1.dp, ZenStoneGrey, RoundedCornerShape(20.dp))
+                    .padding(4.dp)
+                    .testTag("breath_ritual_mode_switcher"),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // outer ring progress
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val center = Offset(size.width / 2, size.height / 2)
-                    val baseRadius = size.width / 2f - 20f
-
-                    // Draw outer ring
-                    drawCircle(
-                        color = ZenStoneGrey,
-                        radius = baseRadius,
-                        center = center,
-                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4f)
-                    )
-
-                    // Draw complete ritual progress (overall progress based on counts 1..3 and phase)
-                    val overallProgress = ((count - 1) + when (phase) {
-                        BreathPhase.IN -> progress * 0.33f
-                        BreathPhase.HOLD -> 0.33f + progress * 0.33f
-                        BreathPhase.OUT -> 0.66f + progress * 0.33f
-                        else -> 1f
-                    }) / 3f
-
-                    drawArc(
-                        color = ZenAmber,
-                        startAngle = -90f,
-                        sweepAngle = overallProgress * 360f,
-                        useCenter = false,
-                        topLeft = Offset(center.x - baseRadius, center.y - baseRadius),
-                        size = androidx.compose.ui.geometry.Size(baseRadius * 2, baseRadius * 2),
-                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 8f)
-                    )
-                }
-
-                // Inner breathing sphere
-                Box(
-                    modifier = Modifier
-                        .size(140.dp)
-                        .graphicsLayer(
-                            scaleX = targetScale,
-                            scaleY = targetScale
-                        )
-                        .clip(CircleShape)
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    ZenAmber.copy(alpha = 0.9f + (glowIntensity * 0.1f)),
-                                    ZenAmberDim.copy(alpha = 0.6f)
-                                )
+                listOf("Breath Pacer", "Touch Anchor").forEachIndexed { index, title ->
+                    val isSelected = selectedRitualTab == index
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(if (isSelected) ZenAmber else Color.Transparent)
+                            .clickable { selectedRitualTab = index }
+                            .padding(horizontal = 14.dp, vertical = 6.dp)
+                            .testTag("ritual_tab_$index"),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) ZenBlack else ZenTextSecondary
                             )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.SelfImprovement,
-                        contentDescription = "Zen Breath",
-                        tint = ZenBlack,
-                        modifier = Modifier.size(48.dp)
-                    )
+                        )
+                    }
                 }
             }
         }
 
-        // Cancel Button
-        OutlinedButton(
-            onClick = { viewModel.cancelSessionFlow() },
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = ZenTextSecondary),
-            border = BorderStroke(1.dp, ZenStoneGrey),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
+        Spacer(modifier = Modifier.height(12.dp))
+
+        if (selectedRitualTab == 0) {
+            // Compose Breath Pacer Component
+            BreathPacer(
+                modifier = Modifier.fillMaxWidth(),
+                onSessionCompleted = {
+                    viewModel.proceedToShield()
+                }
+            )
+        } else {
+            // Touch Anchor Breathing Circle
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(vertical = 16.dp)
+            ) {
+                Text(
+                    text = when {
+                        !isHolding -> stringResource(R.string.breath_press_hold)
+                        phase == BreathPhase.IN -> stringResource(R.string.breath_in)
+                        phase == BreathPhase.HOLD -> stringResource(R.string.breath_hold)
+                        phase == BreathPhase.OUT -> stringResource(R.string.breath_out)
+                        else -> stringResource(R.string.breath_centering)
+                    },
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontFamily = FontFamily.Serif,
+                        fontWeight = FontWeight.Light,
+                        color = if (isHolding) ZenAmber else ZenTextPrimary
+                    ),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = if (isHolding) stringResource(R.string.breath_count_format, count) else stringResource(R.string.breath_anchor),
+                    style = MaterialTheme.typography.bodyMedium.copy(color = ZenTextSecondary)
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Box(
+                    modifier = Modifier
+                        .size(220.dp)
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onPress = {
+                                    viewModel.startHoldingBreath()
+                                    tryAwaitRelease()
+                                    viewModel.releaseHoldingBreath()
+                                }
+                            )
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        val center = Offset(size.width / 2, size.height / 2)
+                        val baseRadius = size.width / 2f - 20f
+
+                        drawCircle(
+                            color = ZenStoneGrey,
+                            radius = baseRadius,
+                            center = center,
+                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4f)
+                        )
+
+                        val overallProgress = ((count - 1) + when (phase) {
+                            BreathPhase.IN -> progress * 0.33f
+                            BreathPhase.HOLD -> 0.33f + progress * 0.33f
+                            BreathPhase.OUT -> 0.66f + progress * 0.33f
+                            else -> 1f
+                        }) / 3f
+
+                        drawArc(
+                            color = ZenAmber,
+                            startAngle = -90f,
+                            sweepAngle = overallProgress * 360f,
+                            useCenter = false,
+                            topLeft = Offset(center.x - baseRadius, center.y - baseRadius),
+                            size = androidx.compose.ui.geometry.Size(baseRadius * 2, baseRadius * 2),
+                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 8f)
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(130.dp)
+                            .graphicsLayer(
+                                scaleX = targetScale,
+                                scaleY = targetScale
+                            )
+                            .clip(CircleShape)
+                            .background(
+                                Brush.radialGradient(
+                                    colors = listOf(
+                                        ZenAmber.copy(alpha = 0.9f + (glowIntensity * 0.1f)),
+                                        ZenAmberDim.copy(alpha = 0.6f)
+                                    )
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.SelfImprovement,
+                            contentDescription = "Zen Breath",
+                            tint = ZenBlack,
+                            modifier = Modifier.size(44.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Actions: Begin Focus Session / Cancel
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text("Cancel Intent")
+            Button(
+                onClick = { viewModel.proceedToShield() },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = ZenAmber,
+                    contentColor = ZenBlack
+                ),
+                shape = RoundedCornerShape(22.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .testTag("start_deep_focus_after_breath_button")
+            ) {
+                Text(
+                    text = "BEGIN DEEP FOCUS SESSION",
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.5.sp
+                    )
+                )
+            }
+
+            OutlinedButton(
+                onClick = { viewModel.cancelSessionFlow() },
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = ZenTextSecondary),
+                border = BorderStroke(1.dp, ZenStoneGrey),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(46.dp)
+            ) {
+                Text("Cancel Session")
+            }
         }
     }
 }
@@ -842,34 +911,18 @@ fun DeepShieldView(viewModel: FlowViewModel) {
     val ZenMossGreen = MaterialTheme.colorScheme.secondary
 
     val remainingSeconds by viewModel.remainingSeconds.collectAsState()
+    val totalMinutes by viewModel.selectedDurationMinutes.collectAsState()
+    val isTimerRunning by viewModel.isTimerRunning.collectAsState()
     val gammaEnabled by viewModel.gammaEnabled.collectAsState()
     val rainEnabled by viewModel.rainEnabled.collectAsState()
     val intent by viewModel.currentIntent.collectAsState()
-
-    val formattedTime = remember(remainingSeconds) {
-        val mins = remainingSeconds / 60
-        val secs = remainingSeconds % 60
-        String.format("%02d:%02d", mins, secs)
-    }
-
-    // Breathing pulse for visual centering
-    val infiniteTransition = rememberInfiniteTransition(label = "ShieldPulse")
-    val pulseSize by infiniteTransition.animateFloat(
-        initialValue = 0.85f,
-        targetValue = 1.15f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = EaseInOutSine), // 6 seconds respiratory period
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "ShieldPulsing"
-    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(ZenBlack)
             .verticalScroll(rememberScrollState())
-            .padding(24.dp)
+            .padding(16.dp)
             .statusBarsPadding()
             .navigationBarsPadding(),
         verticalArrangement = Arrangement.SpaceBetween,
@@ -879,7 +932,7 @@ fun DeepShieldView(viewModel: FlowViewModel) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+            modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
         ) {
             Icon(
                 imageVector = Icons.Outlined.Spa,
@@ -898,54 +951,21 @@ fun DeepShieldView(viewModel: FlowViewModel) {
             )
         }
 
-        // Center Pulsing Breath Light & Timer
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.weight(1f)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(180.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                // Outer Blur Glow
-                Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .graphicsLayer(scaleX = pulseSize * 1.5f, scaleY = pulseSize * 1.5f)
-                        .blur(30.dp)
-                        .clip(CircleShape)
-                        .background(ZenAmber.copy(alpha = 0.15f))
-                )
+        Spacer(modifier = Modifier.height(12.dp))
 
-                // Actual Pulsing Sphere
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .graphicsLayer(scaleX = pulseSize, scaleY = pulseSize)
-                        .clip(CircleShape)
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(ZenAmber.copy(alpha = 0.8f), ZenBlack)
-                            )
-                        )
-                        .border(1.dp, ZenAmber.copy(alpha = 0.3f), CircleShape)
-                )
-            }
+        // Minimalist Focus Timer Component (Circular Progress Bar & Customizable Intervals)
+        MinimalistFocusTimer(
+            totalSeconds = totalMinutes * 60,
+            remainingSeconds = remainingSeconds,
+            isRunning = isTimerRunning,
+            onTogglePlayPause = { viewModel.toggleTimerPlayPause() },
+            onReset = { viewModel.resetTimer() },
+            onSelectInterval = { mins -> viewModel.updateFocusInterval(mins) },
+            presetIntervals = listOf(5, 10, 15, 25, 45, 60, 90, 120),
+            modifier = Modifier.fillMaxWidth()
+        )
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = formattedTime,
-                style = MaterialTheme.typography.displayLarge.copy(
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.ExtraLight,
-                    color = ZenTextPrimary,
-                    fontSize = 54.sp
-                )
-            )
-        }
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Soundscape Synthesizer Controls
         Column(
@@ -1167,23 +1187,88 @@ fun MetacognitiveMirrorView(viewModel: FlowViewModel) {
                 style = MaterialTheme.typography.bodyMedium.copy(color = ZenAmber, fontWeight = FontWeight.Bold)
             )
 
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-            // Notes input
+            // Quick reflection prompt tags
             Text(
-                text = "Record post-session reflections",
-                style = MaterialTheme.typography.bodyLarge.copy(color = ZenTextSecondary),
+                text = "Quick Reflection Tags:",
+                style = MaterialTheme.typography.labelSmall.copy(color = ZenTextSecondary),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Start
             )
+            Spacer(modifier = Modifier.height(6.dp))
+
+            val quickReflectionTags = listOf(
+                "🎯 Deep Immersion",
+                "💡 Sudden Breakthrough",
+                "🌊 Distraction Resisted",
+                "🧘 Calm & Grounded",
+                "⚡ High Energy Flow"
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                quickReflectionTags.forEach { tag ->
+                    val isTagInNote = note.contains(tag)
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(if (isTagInNote) ZenAmber.copy(alpha = 0.25f) else ZenStoneDark)
+                            .border(1.dp, if (isTagInNote) ZenAmber else ZenStoneGrey, RoundedCornerShape(14.dp))
+                            .clickable {
+                                note = if (isTagInNote) {
+                                    note.replace(tag, "").trim()
+                                } else {
+                                    if (note.isBlank()) tag else "$note | $tag"
+                                }
+                            }
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                            .testTag("reflection_tag_${tag.take(10)}")
+                    ) {
+                        Text(
+                            text = tag,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = if (isTagInNote) ZenAmber else ZenTextPrimary,
+                                fontSize = 11.sp
+                            )
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Metacognitive Reflection Text Input Field
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Post-Session Metacognitive Reflection",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = ZenTextPrimary,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+                Text(
+                    text = "${note.length}/300",
+                    style = MaterialTheme.typography.labelSmall.copy(color = ZenTextSecondary)
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
                 value = note,
-                onValueChange = { note = it },
+                onValueChange = { if (it.length <= 300) note = it },
                 placeholder = {
                     Text(
-                        "Capture observations of your mind state... (e.g., breath, subtle distractions)",
+                        "How did your mind engage during this flow state? Note any friction, insights, or effortless concentration...",
                         color = ZenTextSecondary,
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -1196,7 +1281,7 @@ fun MetacognitiveMirrorView(viewModel: FlowViewModel) {
                     focusedContainerColor = ZenStoneDark,
                     unfocusedContainerColor = ZenBlack
                 ),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(14.dp),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {
                     keyboardController?.hide()
@@ -1204,7 +1289,8 @@ fun MetacognitiveMirrorView(viewModel: FlowViewModel) {
                 }),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(110.dp)
+                    .height(125.dp)
+                    .testTag("reflection_text_input")
             )
         }
 
@@ -1217,7 +1303,10 @@ fun MetacognitiveMirrorView(viewModel: FlowViewModel) {
                 onClick = { viewModel.discardSession() },
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = ZenTextSecondary),
                 border = BorderStroke(1.dp, ZenStoneGrey),
-                modifier = Modifier.weight(1f).height(54.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .height(52.dp)
+                    .testTag("discard_reflection_button")
             ) {
                 Text("Discard")
             }
@@ -1225,9 +1314,19 @@ fun MetacognitiveMirrorView(viewModel: FlowViewModel) {
             Button(
                 onClick = { viewModel.saveSession(rating, note) },
                 colors = ButtonDefaults.buttonColors(containerColor = ZenAmber, contentColor = ZenBlack),
-                modifier = Modifier.weight(2f).height(54.dp)
+                modifier = Modifier
+                    .weight(2f)
+                    .height(52.dp)
+                    .testTag("save_reflection_button")
             ) {
-                Text("Save to Mirror", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                Icon(
+                    imageVector = Icons.Filled.Save,
+                    contentDescription = null,
+                    tint = ZenBlack,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("Save Reflection", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
             }
         }
     }

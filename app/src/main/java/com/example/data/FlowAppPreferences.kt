@@ -37,6 +37,7 @@ class FlowAppPreferences(context: Context) {
         private const val KEY_LAST_UPDATE_CHECK_TIME = "last_update_check_time"
         private const val KEY_LAST_UPDATE_DISMISSED_TIME = "last_update_dismissed_time"
         private const val KEY_CUSTOM_INTENTS = "custom_intents_set"
+        private const val KEY_THEME_MODE = "theme_mode_preference"
 
         val DEFAULT_INTENT_POOL = listOf(
             "Deep Reading",
@@ -217,5 +218,19 @@ class FlowAppPreferences(context: Context) {
     fun onNeverAskRating() {
         prefs.edit().putBoolean(KEY_DONT_ASK_RATING, true).apply()
         _activePrompt.value = SmartPromptInfo(SmartPromptType.NONE)
+    }
+
+    fun getSavedThemeMode(): com.example.viewmodel.FlowThemeMode {
+        val saved = prefs.getString(KEY_THEME_MODE, com.example.viewmodel.FlowThemeMode.CIRCADIAN.name)
+            ?: com.example.viewmodel.FlowThemeMode.CIRCADIAN.name
+        return try {
+            com.example.viewmodel.FlowThemeMode.valueOf(saved)
+        } catch (e: Exception) {
+            com.example.viewmodel.FlowThemeMode.CIRCADIAN
+        }
+    }
+
+    fun saveThemeMode(mode: com.example.viewmodel.FlowThemeMode) {
+        prefs.edit().putString(KEY_THEME_MODE, mode.name).apply()
     }
 }
