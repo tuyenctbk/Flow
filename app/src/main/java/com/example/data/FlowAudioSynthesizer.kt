@@ -34,36 +34,10 @@ class FlowAudioSynthesizer {
     private var lastBrownLeft = 0.0f
     private var lastBrownRight = 0.0f
 
-    fun start(context: Context? = null) {
+    fun start() {
         if (audioTrack != null) return
 
         try {
-            if (context != null) {
-                try {
-                    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                            .setAudioAttributes(
-                                AudioAttributes.Builder()
-                                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                    .build()
-                            )
-                            .setAcceptsDelayedFocusGain(true)
-                            .build()
-                        audioManager?.requestAudioFocus(focusRequest)
-                    } else {
-                        @Suppress("DEPRECATION")
-                        audioManager?.requestAudioFocus(
-                            null,
-                            AudioManager.STREAM_MUSIC,
-                            AudioManager.AUDIOFOCUS_GAIN
-                        )
-                    }
-                } catch (e: Exception) {
-                    Log.e("FlowAudioSynthesizer", "Error requesting audio focus", e)
-                }
-            }
 
             val sampleRate = 44100
             val minBufferSize = AudioTrack.getMinBufferSize(

@@ -156,7 +156,7 @@ class FlowViewModel(application: Application) : AndroidViewModel(application) {
     )
 
     init {
-        synthesizer.start(getApplication())
+        synthesizer.start()
         updateSynthVolumes()
 
         viewModelScope.launch {

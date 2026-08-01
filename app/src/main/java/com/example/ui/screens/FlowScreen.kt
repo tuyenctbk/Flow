@@ -229,72 +229,6 @@ fun IdleSetupView(viewModel: FlowViewModel) {
                 }
             }
 
-            // Firebase AI Focus Mentor Card
-            Spacer(modifier = Modifier.height(16.dp))
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = ZenStoneDark,
-                border = BorderStroke(1.dp, ZenStoneGrey),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AutoAwesome,
-                                contentDescription = null,
-                                tint = ZenAmber,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                text = "Firebase AI Focus Mentor",
-                                style = MaterialTheme.typography.titleSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = ZenTextPrimary
-                                )
-                            )
-                        }
-
-                        TextButton(
-                            onClick = { viewModel.generateAiMantra() },
-                            enabled = !isAiLoading
-                        ) {
-                            if (isAiLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(16.dp),
-                                    color = ZenAmber,
-                                    strokeWidth = 2.dp
-                                )
-                            } else {
-                                Text(
-                                    text = "Spark Mantra",
-                                    color = ZenAmber,
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                                )
-                            }
-                        }
-                    }
-
-                    if (!aiMantra.isNullOrBlank()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "\"${aiMantra}\"",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                fontFamily = FontFamily.Serif,
-                                color = ZenAmberDim
-                            )
-                        )
-                    }
-                }
-            }
-
             Spacer(modifier = Modifier.height(24.dp))
 
             // Duration Selector Header
@@ -384,46 +318,7 @@ fun IdleSetupView(viewModel: FlowViewModel) {
                 }
             }
 
-            // Firebase Cloud Focus Pulse Banner
-            Spacer(modifier = Modifier.height(20.dp))
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = ZenStoneDark.copy(alpha = 0.6f),
-                border = BorderStroke(1.dp, ZenStoneGrey.copy(alpha = 0.5f)),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CloudDone,
-                            contentDescription = null,
-                            tint = ZenMossGreen,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Text(
-                            text = "Firebase Cloud Sync: Active",
-                            style = MaterialTheme.typography.labelSmall.copy(color = ZenTextSecondary)
-                        )
-                    }
 
-                    Text(
-                        text = "🌐 ${communityStats.totalCloudFocusMinutes / 60}h Global Flow",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            color = ZenAmber,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-                }
-            }
         }
 
         // Action Button

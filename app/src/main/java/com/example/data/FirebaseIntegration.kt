@@ -37,17 +37,30 @@ class FirebaseIntegration {
     private val _isAiLoading = MutableStateFlow(false)
     val isAiLoading: StateFlow<Boolean> = _isAiLoading.asStateFlow()
 
+    private val mantraCache = mutableMapOf<String, String>()
+    private val reflectionCache = mutableMapOf<String, String>()
+
     /**
      * Firebase AI / Gemini API Integration to generate a personalized focus mantra
      */
     suspend fun generateFocusMantra(intent: String): String = withContext(Dispatchers.IO) {
         if (intent.isBlank()) return@withContext "Bring calm awareness to this moment."
+        
+        val trimmedIntent = intent.trim().lowercase()
+        if (mantraCache.containsKey(trimmedIntent)) {
+            val cached = mantraCache[trimmedIntent]!!
+            _aiMantra.value = cached
+            _isAiLoading.value = false
+            return@withContext cached
+        }
+
         _isAiLoading.value = true
 
         val apiKey = try { BuildConfig.GEMINI_API_KEY } catch (e: Exception) { "" }
         if (apiKey.isBlank() || apiKey == "MY_GEMINI_API_KEY") {
             _isAiLoading.value = false
             val fallback = getFallbackMantra(intent)
+            mantraCache[trimmedIntent] = fallback
             _aiMantra.value = fallback
             return@withContext fallback
         }
@@ -79,6 +92,7 @@ class FirebaseIntegration {
 
                     if (!text.isNullOrBlank()) {
                         val cleanText = text.trim().removeSurrounding("\"", "\"")
+                        mantraCache[trimmedIntent] = cleanText
                         _aiMantra.value = cleanText
                         _isAiLoading.value = false
                         return@withContext cleanText
@@ -91,6 +105,7 @@ class FirebaseIntegration {
 
         _isAiLoading.value = false
         val fallback = getFallbackMantra(intent)
+        mantraCache[trimmedIntent] = fallback
         _aiMantra.value = fallback
         return@withContext fallback
     }
@@ -104,9 +119,16 @@ class FirebaseIntegration {
         flowScore: Int,
         frictionNotes: String
     ): String = withContext(Dispatchers.IO) {
+        val cacheKey = "${intent.trim().lowercase()}-$durationMinutes-$flowScore-${frictionNotes.trim().lowercase()}"
+        if (reflectionCache.containsKey(cacheKey)) {
+            return@withContext reflectionCache[cacheKey]!!
+        }
+
         val apiKey = try { BuildConfig.GEMINI_API_KEY } catch (e: Exception) { "" }
         if (apiKey.isBlank() || apiKey == "MY_GEMINI_API_KEY") {
-            return@withContext getFallbackReflection(flowScore, frictionNotes)
+            val fallback = getFallbackReflection(flowScore, frictionNotes)
+            reflectionCache[cacheKey] = fallback
+            return@withContext fallback
         }
 
         try {
@@ -138,7 +160,9 @@ class FirebaseIntegration {
                         ?.optString("text")
 
                     if (!text.isNullOrBlank()) {
-                        return@withContext text.trim()
+                        val result = text.trim()
+                        reflectionCache[cacheKey] = result
+                        return@withContext result
                     }
                 }
             }
@@ -146,7 +170,9 @@ class FirebaseIntegration {
             e.printStackTrace()
         }
 
-        return@withContext getFallbackReflection(flowScore, frictionNotes)
+        val fallback = getFallbackReflection(flowScore, frictionNotes)
+        reflectionCache[cacheKey] = fallback
+        return@withContext fallback
     }
 
     /**
