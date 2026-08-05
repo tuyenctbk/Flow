@@ -14,6 +14,9 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
+import android.content.Context
+import android.content.SharedPreferences
+
 data class CommunityStats(
     val totalCloudFocusMinutes: Long = 142850L,
     val activeMindfulUsers: Int = 1240,
@@ -21,7 +24,9 @@ data class CommunityStats(
     val lastSyncTime: String = "Just now"
 )
 
-class FirebaseIntegration {
+class FirebaseIntegration(context: Context? = null) {
+
+    private val prefs: SharedPreferences? = context?.getSharedPreferences("flow_ai_cache", Context.MODE_PRIVATE)
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -37,8 +42,26 @@ class FirebaseIntegration {
     private val _isAiLoading = MutableStateFlow(false)
     val isAiLoading: StateFlow<Boolean> = _isAiLoading.asStateFlow()
 
-    private val mantraCache = mutableMapOf<String, String>()
-    private val reflectionCache = mutableMapOf<String, String>()
+    private val memoryMantraCache = mutableMapOf<String, String>()
+    private val memoryReflectionCache = mutableMapOf<String, String>()
+
+    private fun getCachedMantra(key: String): String? {
+        return memoryMantraCache[key] ?: prefs?.getString("mantra_$key", null)
+    }
+
+    private fun saveCachedMantra(key: String, value: String) {
+        memoryMantraCache[key] = value
+        prefs?.edit()?.putString("mantra_$key", value)?.apply()
+    }
+
+    private fun getCachedReflection(key: String): String? {
+        return memoryReflectionCache[key] ?: prefs?.getString("reflection_$key", null)
+    }
+
+    private fun saveCachedReflection(key: String, value: String) {
+        memoryReflectionCache[key] = value
+        prefs?.edit()?.putString("reflection_$key", value)?.apply()
+    }
 
     /**
      * Firebase AI / Gemini API Integration to generate a personalized focus mantra
@@ -47,11 +70,11 @@ class FirebaseIntegration {
         if (intent.isBlank()) return@withContext "Bring calm awareness to this moment."
         
         val trimmedIntent = intent.trim().lowercase()
-        if (mantraCache.containsKey(trimmedIntent)) {
-            val cached = mantraCache[trimmedIntent]!!
-            _aiMantra.value = cached
+        val cachedMantra = getCachedMantra(trimmedIntent)
+        if (!cachedMantra.isNullOrBlank()) {
+            _aiMantra.value = cachedMantra
             _isAiLoading.value = false
-            return@withContext cached
+            return@withContext cachedMantra
         }
 
         _isAiLoading.value = true
@@ -60,7 +83,7 @@ class FirebaseIntegration {
         if (apiKey.isBlank() || apiKey == "MY_GEMINI_API_KEY") {
             _isAiLoading.value = false
             val fallback = getFallbackMantra(intent)
-            mantraCache[trimmedIntent] = fallback
+            saveCachedMantra(trimmedIntent, fallback)
             _aiMantra.value = fallback
             return@withContext fallback
         }
@@ -75,7 +98,7 @@ class FirebaseIntegration {
             }
 
             val request = Request.Builder()
-                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=$apiKey")
+                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey")
                 .post(jsonBody.toString().toRequestBody("application/json".toMediaType()))
                 .build()
 
@@ -92,7 +115,7 @@ class FirebaseIntegration {
 
                     if (!text.isNullOrBlank()) {
                         val cleanText = text.trim().removeSurrounding("\"", "\"")
-                        mantraCache[trimmedIntent] = cleanText
+                        saveCachedMantra(trimmedIntent, cleanText)
                         _aiMantra.value = cleanText
                         _isAiLoading.value = false
                         return@withContext cleanText
@@ -100,12 +123,12 @@ class FirebaseIntegration {
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            // Silently catch rate-limits, network issues, or quota errors and use fallback
         }
 
         _isAiLoading.value = false
         val fallback = getFallbackMantra(intent)
-        mantraCache[trimmedIntent] = fallback
+        saveCachedMantra(trimmedIntent, fallback)
         _aiMantra.value = fallback
         return@withContext fallback
     }
@@ -120,14 +143,15 @@ class FirebaseIntegration {
         frictionNotes: String
     ): String = withContext(Dispatchers.IO) {
         val cacheKey = "${intent.trim().lowercase()}-$durationMinutes-$flowScore-${frictionNotes.trim().lowercase()}"
-        if (reflectionCache.containsKey(cacheKey)) {
-            return@withContext reflectionCache[cacheKey]!!
+        val cachedReflection = getCachedReflection(cacheKey)
+        if (!cachedReflection.isNullOrBlank()) {
+            return@withContext cachedReflection
         }
 
         val apiKey = try { BuildConfig.GEMINI_API_KEY } catch (e: Exception) { "" }
         if (apiKey.isBlank() || apiKey == "MY_GEMINI_API_KEY") {
             val fallback = getFallbackReflection(flowScore, frictionNotes)
-            reflectionCache[cacheKey] = fallback
+            saveCachedReflection(cacheKey, fallback)
             return@withContext fallback
         }
 
@@ -145,7 +169,7 @@ class FirebaseIntegration {
             }
 
             val request = Request.Builder()
-                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=$apiKey")
+                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey")
                 .post(jsonBody.toString().toRequestBody("application/json".toMediaType()))
                 .build()
 
@@ -161,7 +185,7 @@ class FirebaseIntegration {
 
                     if (!text.isNullOrBlank()) {
                         val result = text.trim()
-                        reflectionCache[cacheKey] = result
+                        saveCachedReflection(cacheKey, result)
                         return@withContext result
                     }
                 }
@@ -171,7 +195,7 @@ class FirebaseIntegration {
         }
 
         val fallback = getFallbackReflection(flowScore, frictionNotes)
-        reflectionCache[cacheKey] = fallback
+        saveCachedReflection(cacheKey, fallback)
         return@withContext fallback
     }
 
@@ -189,13 +213,50 @@ class FirebaseIntegration {
     }
 
     private fun getFallbackMantra(intent: String): String {
+        val lower = intent.lowercase()
         return when {
-            intent.contains("Reading", ignoreCase = true) -> "Immerse yourself completely in the stillness of each word."
-            intent.contains("Writing", ignoreCase = true) -> "Let your thoughts flow smoothly without judgment or noise."
-            intent.contains("Meditat", ignoreCase = true) -> "Anchor your mind to the breath and find infinite calm."
-            intent.contains("Cod", ignoreCase = true) -> "One clear logic path at a time. Deep focus is effortless."
-            intent.contains("Plan", ignoreCase = true) -> "Clarity emerges when the mind is centered and unhurried."
-            else -> "Single-minded presence is your superpower. Begin with peace."
+            lower.contains("read") || lower.contains("book") || lower.contains("study") -> 
+                listOf(
+                    "Immerse yourself completely in the stillness of each word.",
+                    "Absorb knowledge quietly, one page at a time.",
+                    "Let deep comprehension unfold naturally without rush."
+                ).random()
+            lower.contains("writ") || lower.contains("draft") || lower.contains("journal") -> 
+                listOf(
+                    "Let your thoughts flow smoothly without judgment or noise.",
+                    "Give voice to quiet thoughts with patient focus.",
+                    "Every sentence is a step into clear expression."
+                ).random()
+            lower.contains("meditat") || lower.contains("breath") || lower.contains("calm") || lower.contains("zen") -> 
+                listOf(
+                    "Anchor your mind to the breath and find infinite calm.",
+                    "Rest in the present moment. Quietness is strength.",
+                    "Release tension with every exhale."
+                ).random()
+            lower.contains("cod") || lower.contains("program") || lower.contains("dev") || lower.contains("build") -> 
+                listOf(
+                    "One clear logic path at a time. Deep focus is effortless.",
+                    "Simplify complex problems into elegant, calm steps.",
+                    "Build with presence and patient precision."
+                ).random()
+            lower.contains("plan") || lower.contains("strateg") || lower.contains("think") -> 
+                listOf(
+                    "Clarity emerges when the mind is centered and unhurried.",
+                    "See the big picture with serene perspective.",
+                    "Focus on what matters most; let the rest fade."
+                ).random()
+            lower.contains("design") || lower.contains("art") || lower.contains("creat") -> 
+                listOf(
+                    "Allow pure creativity to rise from a peaceful mind.",
+                    "Focus on simplicity and aesthetic balance.",
+                    "Craft with intention and calm artistic flow."
+                ).random()
+            else -> 
+                listOf(
+                    "Single-minded presence is your superpower. Begin with peace.",
+                    "Quiet the outer world; enter your inner sanctuary.",
+                    "Concentrate on this moment alone. Everything else can wait."
+                ).random()
         }
     }
 

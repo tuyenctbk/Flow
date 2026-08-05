@@ -9,6 +9,7 @@
 
     <!-- Flow Screen Setup -->
     <string name="intent_writing">Creative Writing</string>
+    <string name="intent_coding">Coding</string>
     <string name="intent_reading">Deep Reading</string>
     <string name="intent_meditating">Zen Meditation</string>
     <string name="intent_planning">Strategic Planning</string>

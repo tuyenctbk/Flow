@@ -42,13 +42,7 @@ class FlowForegroundService : Service() {
                 val remainingSeconds = intent?.getIntExtra(EXTRA_REMAINING_SECONDS, 1500) ?: 1500
                 acquireWakeLock()
                 val notification = buildNotification(intentName, remainingSeconds)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    startForeground(
-                        NOTIFICATION_ID,
-                        notification,
-                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK or android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
-                    )
-                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     startForeground(
                         NOTIFICATION_ID,
                         notification,

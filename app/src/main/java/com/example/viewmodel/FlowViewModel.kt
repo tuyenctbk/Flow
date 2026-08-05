@@ -44,7 +44,7 @@ class FlowViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
     private val repository = FlowRepository(db.flowSessionDao())
     val appPreferences = FlowAppPreferences(application)
-    val firebaseIntegration = FirebaseIntegration()
+    val firebaseIntegration = FirebaseIntegration(application)
 
     val communityStats = firebaseIntegration.communityStats
     val aiMantra = firebaseIntegration.aiMantra

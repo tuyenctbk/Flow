@@ -275,18 +275,34 @@ fun BreathPacer(
         ) {
             val effectiveScale = if (isPacingRunning) circleScale.value else idlePulseScale
 
-            // Outer Soft Aura Blur Glow
-            Box(
+            // Outer Soft Ambient Aura Glow (Smooth Canvas Radial Gradient - no square bounds!)
+            Canvas(
                 modifier = Modifier
-                    .size(170.dp)
+                    .fillMaxSize()
                     .graphicsLayer(
-                        scaleX = effectiveScale * 1.35f,
-                        scaleY = effectiveScale * 1.35f
+                        scaleX = effectiveScale * 1.15f,
+                        scaleY = effectiveScale * 1.15f
                     )
-                    .blur(36.dp)
-                    .clip(CircleShape)
-                    .background(ZenAmber.copy(alpha = if (isPacingRunning) 0.28f else 0.12f))
-            )
+            ) {
+                val center = Offset(size.width / 2f, size.height / 2f)
+                val maxRadius = size.minDimension / 2f
+                val glowAlpha = if (isPacingRunning) 0.32f else 0.14f
+
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colorStops = arrayOf(
+                            0.0f to ZenAmber.copy(alpha = glowAlpha),
+                            0.45f to ZenAmberDim.copy(alpha = glowAlpha * 0.5f),
+                            0.85f to ZenAmber.copy(alpha = glowAlpha * 0.15f),
+                            1.0f to Color.Transparent
+                        ),
+                        center = center,
+                        radius = maxRadius
+                    ),
+                    radius = maxRadius,
+                    center = center
+                )
+            }
 
             // Outer Circular Track & Phase Sweep Canvas
             Canvas(modifier = Modifier.fillMaxSize()) {
@@ -320,29 +336,49 @@ fun BreathPacer(
             }
 
             // Expanding & Contracting Inner Breath Core
-            Box(
+            Canvas(
                 modifier = Modifier
-                    .size(130.dp)
+                    .size(140.dp)
                     .graphicsLayer(
                         scaleX = effectiveScale,
                         scaleY = effectiveScale
                     )
-                    .clip(CircleShape)
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(
-                                ZenAmber.copy(alpha = 0.85f),
-                                ZenAmberDim.copy(alpha = 0.5f),
-                                Color.Transparent
-                            )
-                        )
-                    )
-                    .border(
-                        width = 1.5.dp,
-                        brush = Brush.radialGradient(listOf(ZenAmber, Color.Transparent)),
-                        shape = CircleShape
-                    )
-            )
+            ) {
+                val center = Offset(size.width / 2f, size.height / 2f)
+                val radius = size.minDimension / 2f
+
+                // Smooth core fill
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colorStops = arrayOf(
+                            0.0f to ZenAmber.copy(alpha = 0.85f),
+                            0.70f to ZenAmberDim.copy(alpha = 0.55f),
+                            0.95f to ZenAmber.copy(alpha = 0.25f),
+                            1.0f to Color.Transparent
+                        ),
+                        center = center,
+                        radius = radius
+                    ),
+                    radius = radius,
+                    center = center
+                )
+
+                // Precise circular border stroke
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colorStops = arrayOf(
+                            0.0f to ZenAmber.copy(alpha = 0.9f),
+                            0.8f to ZenAmber.copy(alpha = 0.4f),
+                            1.0f to Color.Transparent
+                        ),
+                        center = center,
+                        radius = radius
+                    ),
+                    radius = radius,
+                    center = center,
+                    style = Stroke(width = 1.5.dp.toPx())
+                )
+            }
 
             // Central Instruction & Text Overlay
             Column(

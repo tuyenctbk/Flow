@@ -141,16 +141,29 @@ fun MinimalistFocusTimer(
                 .testTag("circular_focus_timer"),
             contentAlignment = Alignment.Center
         ) {
-            // Ambient Outer Glow
+            // Ambient Outer Glow (Smooth Canvas Radial Gradient - no square bounds!)
             if (isRunning) {
-                Box(
+                Canvas(
                     modifier = Modifier
-                        .size(160.dp)
-                        .graphicsLayer(scaleX = pulseScale * 1.3f, scaleY = pulseScale * 1.3f)
-                        .blur(32.dp)
-                        .clip(CircleShape)
-                        .background(ZenAmber.copy(alpha = 0.2f))
-                )
+                        .fillMaxSize()
+                        .graphicsLayer(scaleX = pulseScale * 1.15f, scaleY = pulseScale * 1.15f)
+                ) {
+                    val center = Offset(size.width / 2f, size.height / 2f)
+                    val radius = size.minDimension / 2f
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colorStops = arrayOf(
+                                0.0f to ZenAmber.copy(alpha = 0.25f),
+                                0.6f to ZenAmberDim.copy(alpha = 0.12f),
+                                1.0f to Color.Transparent
+                            ),
+                            center = center,
+                            radius = radius
+                        ),
+                        radius = radius,
+                        center = center
+                    )
+                }
             }
 
             // Canvas drawing Circular Progress Bar

@@ -318,7 +318,6 @@ fun IdleSetupView(viewModel: FlowViewModel) {
                 }
             }
 
-
         }
 
         // Action Button
@@ -723,23 +722,36 @@ fun ThresholdRitualView(viewModel: FlowViewModel) {
                     }
 
                     Box(
-                        modifier = Modifier
-                            .size(130.dp)
-                            .graphicsLayer(
-                                scaleX = targetScale,
-                                scaleY = targetScale
-                            )
-                            .clip(CircleShape)
-                            .background(
-                                Brush.radialGradient(
-                                    colors = listOf(
-                                        ZenAmber.copy(alpha = 0.9f + (glowIntensity * 0.1f)),
-                                        ZenAmberDim.copy(alpha = 0.6f)
-                                    )
-                                )
-                            ),
+                        modifier = Modifier.size(140.dp),
                         contentAlignment = Alignment.Center
                     ) {
+                        Canvas(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer(
+                                    scaleX = targetScale,
+                                    scaleY = targetScale
+                                )
+                        ) {
+                            val center = Offset(size.width / 2f, size.height / 2f)
+                            val radius = size.minDimension / 2f
+                            val fillAlpha = (0.85f + (glowIntensity * 0.15f)).coerceIn(0f, 1f)
+
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    colorStops = arrayOf(
+                                        0.0f to ZenAmber.copy(alpha = fillAlpha),
+                                        0.7f to ZenAmberDim.copy(alpha = fillAlpha * 0.7f),
+                                        1.0f to ZenAmber.copy(alpha = 0.4f)
+                                    ),
+                                    center = center,
+                                    radius = radius
+                                ),
+                                radius = radius,
+                                center = center
+                            )
+                        }
+
                         Icon(
                             imageVector = Icons.Filled.SelfImprovement,
                             contentDescription = "Zen Breath",

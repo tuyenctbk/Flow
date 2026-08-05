@@ -1,4 +1,6 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
   alias(libs.plugins.android.application)
@@ -17,19 +19,27 @@ android {
     applicationId = "com.soloprono.flow"
     minSdk = 24
     targetSdk = 36
-    versionCode = 4
-    versionName = "1.3"
+    versionCode = 6
+    versionName = "1.4"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
+  val localProperties = Properties()
+  val localPropertiesFile = rootProject.file("local.properties")
+  if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
+  }
+
   signingConfigs {
     create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
+      val storeFileName = localProperties.getProperty("RELEASE_STORE_FILE") ?: "common_release_key.jks"
+      val rootKey = rootProject.file(storeFileName)
+      val sharedKey = rootProject.file("../TuneZen/$storeFileName")
+      storeFile = if (rootKey.exists()) rootKey else sharedKey
+      storePassword = localProperties.getProperty("RELEASE_STORE_PASSWORD") ?: "dpadhero123"
+      keyAlias = localProperties.getProperty("RELEASE_KEY_ALIAS") ?: "dpad_hero_alias"
+      keyPassword = localProperties.getProperty("RELEASE_KEY_PASSWORD") ?: "dpadhero123"
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")
@@ -46,7 +56,14 @@ android {
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }
-    debug { signingConfig = signingConfigs.getByName("debugConfig") }
+    debug {
+      val customDebugKey = rootProject.file("debug.keystore")
+      signingConfig = if (customDebugKey.exists()) {
+        signingConfigs.getByName("debugConfig")
+      } else {
+        signingConfigs.getByName("debug")
+      }
+    }
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
