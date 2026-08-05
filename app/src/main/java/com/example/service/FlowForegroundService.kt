@@ -18,6 +18,14 @@ class FlowForegroundService : Service() {
 
     private var wakeLock: PowerManager.WakeLock? = null
 
+    override fun attachBaseContext(newBase: Context) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            super.attachBaseContext(newBase.createAttributionContext("audio"))
+        } else {
+            super.attachBaseContext(newBase)
+        }
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
